@@ -1,25 +1,24 @@
+from datetime import datetime
 from airflow import DAG
 from airflow.operators.python import PythonOperator
-from datetime import datetime
 
-default_args = {
-    "owner": "PauloToledo",
-    "start_date": datetime(2025, 11, 6),
-    "retries": 1
-}
+from src.spark_session import get_spark
+from src.pipeline import run_pipeline
+from src.utils.paths import DATA_DIR, RAW_DIR, CURATED_DIR, STAGING_DIR
+RAW_PATH = RAW_DIR / "roubo_raw.csv"
+STAGING_PATH = STAGING_DIR / "roubo.parquet"
 
-def say_hi():
-    print("Hi from python operator")
+def run_etl():
+    spark = get_spark("roubo_de_carros_etl")
+    run_pipeline(spark, RAW_PATH, STAGING_PATH)
 
 with DAG(
-    'roubo_de_carros_etl_dag',
-    default_args=default_args,
-    description='Pipeline ETL de Dados de Roubo de Carros por estado do Brasil',
-    schedule_interval=None,  #executar manualmente
-    catchup=False,
+    dag_id="roubo_de_carros_dag",
+    start_date=datetime(2025, 1, 1),
+    schedule_interval="@daily",
+    catchup=False
 ) as dag:
-
-    extract = PythonOperator(
-        task_id="say_hi_task",
-        python_callable=say_hi
+    etl_task = PythonOperator(
+        task_id="etl_task",
+        python_callable=run_etl,
     )
