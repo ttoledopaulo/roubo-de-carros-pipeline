@@ -54,13 +54,13 @@ services:
       - postgres
       - redis
 
-  airflow-init:
+  airflow-migrate:
     <<: *airflow-common
     entrypoint: /bin/bash
     command:
       - -c
       - |
-        airflow db init &&
+        airflow db migrate &&
         airflow users create \
           --username admin \
           --firstname Air \
