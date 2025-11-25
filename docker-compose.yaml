@@ -62,6 +62,9 @@ services:
     volumes:
       - ./dags:/opt/airflow/dags
       - ./logs:/opt/airflow/logs
-
+      
+    build:
+      context: .
+      dockerfile: Dockerfile
 volumes:
   postgres_data:
